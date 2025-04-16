@@ -25,6 +25,8 @@ import {
   Ticket,
   Server,
   UploadCloud,
+  Code, // Added Code icon
+  List, // Added List icon for Number of Services
 } from 'lucide-react';
 
 // Define a more detailed type for customer details
@@ -48,7 +50,7 @@ type CustomerDetailsData = {
   accountType: 'Developer Account' | 'Regular Account';
   activityStatus: 'Active' | 'Inactive';
   accountStatus: 'Activated' | 'Deactivated' | 'Blocked' | 'Subscribed' | 'Unsubscribed';
-  authenticationStatus: 'Verified' | 'Not Verified'; // Changed 'notarized' to 'verified'
+  authenticationStatus: 'Verified' | 'Not Verified';
   totalTransactions: string;
   openingDate: string;
   lastLoginIp: string;
@@ -71,10 +73,16 @@ type CustomerDetailsData = {
   };
   // Placeholder Stats Data (replace with actual data structures later)
   stats: {
-    paymentsPerMonth: any[]; // Placeholder for graph data
-    activityLastWeek: any[]; // Placeholder for graph data
-    ticketsPerService: any[]; // Placeholder for graph data
-    popularServices: any[]; // Placeholder for graph data
+    // Keep graph placeholders if needed elsewhere, or remove if only line stats are used
+    paymentsPerMonth: any[];
+    activityLastWeek: any[];
+    ticketsPerService: any[];
+    popularServices: any[];
+    // Add specific line stats placeholders
+    paymentsLastMonth: number;
+    activityCasesLastMonth: number;
+    ticketsOpenedLastMonth: number;
+    // numberOfServices is derived from activeServices.length
   };
 };
 
@@ -82,6 +90,10 @@ type CustomerDetailsData = {
 const getCustomerDetails = (id: number): CustomerDetailsData | null => {
   // In a real app, fetch data based on id
   if (id === 2) { // Example: Bob The Builder (Developer Account with Company)
+    const activeServices = [
+      { id: 'SVC001', name: 'Premium API Access', activationDate: '2023-01-01' },
+      { id: 'SVC005', name: 'Cloud Storage 1TB', activationDate: '2023-02-15' },
+    ];
     return {
       id: 2,
       firstName: 'Bob',
@@ -103,10 +115,7 @@ const getCustomerDetails = (id: number): CustomerDetailsData | null => {
         { name: 'id_scan.pdf', url: '#' },
         { name: 'proof_of_address.jpg', url: '#' },
       ],
-      activeServices: [
-        { id: 'SVC001', name: 'Premium API Access', activationDate: '2023-01-01' },
-        { id: 'SVC005', name: 'Cloud Storage 1TB', activationDate: '2023-02-15' },
-      ],
+      activeServices: activeServices,
       company: {
         name: 'BuildIt Co.',
         registrationNumber: 'C1234567',
@@ -119,10 +128,17 @@ const getCustomerDetails = (id: number): CustomerDetailsData | null => {
         activityLastWeek: [],
         ticketsPerService: [],
         popularServices: [],
+        // Placeholder line stats
+        paymentsLastMonth: 12,
+        activityCasesLastMonth: 5,
+        ticketsOpenedLastMonth: 2,
       },
     };
   }
    if (id === 1) { // Example: Alice Wonderland (Regular Account without Company)
+     const activeServices = [
+         { id: 'SVC002', name: 'Basic Support', activationDate: '2023-01-15' },
+      ];
     return {
       id: 1,
       firstName: 'Alice',
@@ -141,15 +157,17 @@ const getCustomerDetails = (id: number): CustomerDetailsData | null => {
       lastLoginIp: '10.0.0.5',
       lastLoginLocation: 'Fantasy City, FS, ImagiNation',
       uploadedFiles: [],
-      activeServices: [
-         { id: 'SVC002', name: 'Basic Support', activationDate: '2023-01-15' },
-      ],
+      activeServices: activeServices,
       // company: undefined, // No company info
       stats: {
         paymentsPerMonth: [],
         activityLastWeek: [],
         ticketsPerService: [],
         popularServices: [],
+         // Placeholder line stats
+        paymentsLastMonth: 3,
+        activityCasesLastMonth: 1,
+        ticketsOpenedLastMonth: 0,
       },
     };
   }
@@ -224,6 +242,17 @@ const AddressTag: React.FC<{ address: CustomerDetailsData['address'] | CustomerD
   </div>
 );
 
+// Helper for individual stat item in the redesigned stats section
+const StatItem: React.FC<{ icon: React.ElementType; label: string; value: string | number; colorClass: string }> = ({ icon: Icon, label, value, colorClass }) => (
+  <div className="flex items-center p-3 bg-gray-50 rounded border border-gray-200 flex-1 min-w-[150px] mx-1">
+    <Icon size={20} className={`mr-3 ${colorClass}`} />
+    <div>
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-sm font-semibold text-gray-800">{value}</p>
+    </div>
+  </div>
+);
+
 
 const CustomerDetails: React.FC = () => {
   const { customerId } = useParams<{ customerId: string }>();
@@ -248,34 +277,41 @@ const CustomerDetails: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+        Customer Details: {customer.firstName} {customer.lastName}
+      </h1>
 
-      {/* Stats Section - Placeholder */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-         <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-           <TrendingUp className="mr-2 text-red-600" size={20} />
-           Activity & Usage Stats
+      {/* Redesigned Stats Section - Single Line */}
+      <div className="bg-white p-4 rounded-lg shadow mb-6">
+         <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+           <TrendingUp className="mr-2 text-red-600" size={18} />
+           Quick Stats (Last Month)
          </h3>
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
-            <div className="p-4 border rounded bg-gray-50">
-                <BarChart2 size={24} className="mx-auto mb-2 text-blue-500"/>
-                <p className="text-xs text-gray-500">Monthly Payments</p>
-                <p className="text-sm font-semibold">[Graph Placeholder]</p>
-            </div>
-             <div className="p-4 border rounded bg-gray-50">
-                <Activity size={24} className="mx-auto mb-2 text-green-500"/>
-                <p className="text-xs text-gray-500">Weekly Activity</p>
-                <p className="text-sm font-semibold">[Graph Placeholder]</p>
-            </div>
-             <div className="p-4 border rounded bg-gray-50">
-                <Ticket size={24} className="mx-auto mb-2 text-yellow-500"/>
-                <p className="text-xs text-gray-500">Ticket Openings</p>
-                <p className="text-sm font-semibold">[Graph Placeholder]</p>
-            </div>
-             <div className="p-4 border rounded bg-gray-50">
-                <PieChart size={24} className="mx-auto mb-2 text-purple-500"/>
-                <p className="text-xs text-gray-500">Popular Services</p>
-                <p className="text-sm font-semibold">[Graph Placeholder]</p>
-            </div>
+         <div className="flex flex-wrap justify-around items-center gap-2">
+            <StatItem
+              icon={CreditCard}
+              label="Payments"
+              value={customer.stats.paymentsLastMonth}
+              colorClass="text-blue-500"
+            />
+             <StatItem
+              icon={Activity}
+              label="Activity Cases"
+              value={customer.stats.activityCasesLastMonth}
+              colorClass="text-green-500"
+            />
+             <StatItem
+              icon={Ticket}
+              label="Tickets Opened"
+              value={customer.stats.ticketsOpenedLastMonth}
+              colorClass="text-yellow-500"
+            />
+             <StatItem
+              icon={List} // Using List icon for number of services
+              label="Active Services"
+              value={customer.activeServices.length} // Calculate from activeServices array
+              colorClass="text-purple-500"
+            />
          </div>
       </div>
 
