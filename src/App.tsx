@@ -5,8 +5,8 @@ import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import CustomerManagement from './pages/CustomerManagement'; // Import the list page
-import CustomerDetails from './pages/CustomerDetails'; // Import the new details page
+import CustomerManagement from './pages/CustomerManagement';
+import CustomerDetails from './pages/CustomerDetails'; // Import the new page
 
 function App() {
   return (
@@ -24,7 +24,7 @@ function App() {
             {/* Route for Customer Management List */}
             <Route path="/customers" element={<CustomerManagement />} />
 
-            {/* Route for Customer Details - uses a dynamic parameter */}
+            {/* Route for Customer Details */}
             <Route path="/customers/:customerId" element={<CustomerDetails />} />
 
             {/* Other routes */}
