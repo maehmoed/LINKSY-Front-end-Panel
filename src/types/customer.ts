@@ -28,6 +28,20 @@ export type Customer = {
   companyAddress?: string;
 };
 
+// Define a type for Financial Transactions
+export type FinancialTransaction = {
+  id: string; // Transaction ID (e.g., 'INV-001', 'PAY-002')
+  dateTime: string; // ISO string or formatted date/time
+  type: 'Invoice' | 'Payment Receipt';
+  status: 'Draft' | 'Paid' | 'Pending' | 'Canceled' | 'Refunded';
+  paymentMethod: 'Cash' | 'CIB Card' | 'EDAHABIA Card' | 'N/A'; // N/A for Draft invoices etc.
+  amount: number; // Total amount
+  amountPaid: number;
+  remainingAmount: number;
+  details: string; // Full transaction details
+  customerId: number; // Link to the customer
+};
+
 // Placeholder data - move this to a shared location or context later if needed
 export const customersData: Customer[] = [
   {
@@ -47,19 +61,43 @@ export const customersData: Customer[] = [
    },
 ];
 
+// Mock Financial Transactions Data
+export const transactionsData: FinancialTransaction[] = [
+  { id: 'INV-001', customerId: 1, dateTime: '2024-07-26T10:30:00Z', type: 'Invoice', status: 'Paid', paymentMethod: 'CIB Card', amount: 5000, amountPaid: 5000, remainingAmount: 0, details: 'Annual Web Hosting Renewal for wonder.com. Includes standard package features.' },
+  { id: 'PAY-001', customerId: 1, dateTime: '2024-07-26T10:35:00Z', type: 'Payment Receipt', status: 'Paid', paymentMethod: 'CIB Card', amount: 5000, amountPaid: 5000, remainingAmount: 0, details: 'Payment for Invoice INV-001 via CIB Card ending in 1234.' },
+  { id: 'INV-002', customerId: 1, dateTime: '2024-08-01T14:00:00Z', type: 'Invoice', status: 'Pending', paymentMethod: 'N/A', amount: 10000, amountPaid: 0, remainingAmount: 10000, details: 'Domain Registration for wonderland.net. Standard 1-year registration.' },
+  { id: 'INV-003', customerId: 2, dateTime: '2024-07-15T09:00:00Z', type: 'Invoice', status: 'Paid', paymentMethod: 'EDAHABIA Card', amount: 150000, amountPaid: 150000, remainingAmount: 0, details: 'Cloud Server Setup - Project Phoenix. Includes 2 vCPU, 4GB RAM, 100GB SSD.' },
+  { id: 'PAY-002', customerId: 2, dateTime: '2024-07-15T09:10:00Z', type: 'Payment Receipt', status: 'Paid', paymentMethod: 'EDAHABIA Card', amount: 150000, amountPaid: 150000, remainingAmount: 0, details: 'Payment for INV-003 via EDAHABIA.' },
+  { id: 'INV-004', customerId: 2, dateTime: '2024-08-10T11:00:00Z', type: 'Invoice', status: 'Draft', paymentMethod: 'N/A', amount: 100000, amountPaid: 0, remainingAmount: 100000, details: 'API Access Tier Upgrade - Gold Plan. Monthly subscription.' },
+  { id: 'INV-005', customerId: 3, dateTime: '2024-06-01T16:20:00Z', type: 'Invoice', status: 'Canceled', paymentMethod: 'N/A', amount: 5000, amountPaid: 0, remainingAmount: 5000, details: 'Consultation Services - Initial meeting. Canceled by customer.' },
+  { id: 'INV-006', customerId: 4, dateTime: '2024-07-20T13:00:00Z', type: 'Invoice', status: 'Paid', paymentMethod: 'Cash', amount: 500, amountPaid: 500, remainingAmount: 0, details: 'Secure Storage Box Rental - Small size. Paid in cash at office.' },
+  { id: 'PAY-003', customerId: 4, dateTime: '2024-07-20T13:05:00Z', type: 'Payment Receipt', status: 'Paid', paymentMethod: 'Cash', amount: 500, amountPaid: 500, remainingAmount: 0, details: 'Cash payment received for INV-006.' },
+  { id: 'INV-007', customerId: 5, dateTime: '2024-08-05T08:45:00Z', type: 'Invoice', status: 'Paid', paymentMethod: 'CIB Card', amount: 1200000, amountPaid: 1200000, remainingAmount: 0, details: 'Project Chimera - Phase 1 Payment. Includes VPN setup and encrypted comms license.' },
+  { id: 'PAY-004', customerId: 5, dateTime: '2024-08-05T08:50:00Z', type: 'Payment Receipt', status: 'Paid', paymentMethod: 'CIB Card', amount: 1200000, amountPaid: 1200000, remainingAmount: 0, details: 'Payment for INV-007 via CIB Card ending in 5678.' },
+  { id: 'INV-008', customerId: 1, dateTime: '2024-08-15T11:00:00Z', type: 'Invoice', status: 'Refunded', paymentMethod: 'CIB Card', amount: 500, amountPaid: 500, remainingAmount: 0, details: 'SSL Certificate - Basic. Refunded due to incorrect order.' },
+  { id: 'PAY-005', customerId: 1, dateTime: '2024-08-15T11:05:00Z', type: 'Payment Receipt', status: 'Refunded', paymentMethod: 'CIB Card', amount: -500, amountPaid: -500, remainingAmount: 0, details: 'Refund for INV-008 processed to CIB Card ending in 1234.' },
+];
+
+
 // Helper function to determine badge color based on status (can be shared)
-export const getStatusBadgeColor = (status: Customer['accountStatus'] | Customer['activityStatus']): string => {
+export const getStatusBadgeColor = (status: Customer['accountStatus'] | Customer['activityStatus'] | FinancialTransaction['status']): string => {
   switch (status) {
     case 'Active':
     case 'Activated':
     case 'Subscribed':
+    case 'Paid':
       return 'bg-green-100 text-green-800';
     case 'Inactive':
     case 'Unsubscribed':
+    case 'Pending':
+    case 'Draft':
       return 'bg-yellow-100 text-yellow-800';
     case 'Deactivated':
     case 'Blocked':
+    case 'Canceled':
       return 'bg-red-100 text-red-800';
+    case 'Refunded':
+      return 'bg-purple-100 text-purple-800'; // Example color for Refunded
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -77,5 +115,33 @@ export const getTypeBadgeStyle = (type: Customer['type']): { color: string; icon
       return { color: 'bg-purple-100 text-purple-800', icon: React.createElement('div', { className: 'lucide-user mr-1' }) };
     default:
       return { color: 'bg-gray-100 text-gray-800', icon: null };
+  }
+};
+
+// Helper function for transaction type badge
+export const getTransactionTypeBadge = (type: FinancialTransaction['type']): string => {
+  switch (type) {
+    case 'Invoice':
+      return 'bg-indigo-100 text-indigo-800';
+    case 'Payment Receipt':
+      return 'bg-teal-100 text-teal-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
+// Helper function for payment method badge
+export const getPaymentMethodBadge = (method: FinancialTransaction['paymentMethod']): string => {
+  switch (method) {
+    case 'Cash':
+      return 'bg-lime-100 text-lime-800';
+    case 'CIB Card':
+      return 'bg-orange-100 text-orange-800';
+    case 'EDAHABIA Card':
+      return 'bg-cyan-100 text-cyan-800';
+    case 'N/A':
+      return 'bg-gray-100 text-gray-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 };
